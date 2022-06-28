@@ -85,6 +85,8 @@ def main() -> None:
             raise RuntimeError("decrypt requires the message to decrypt")
         decrypted = decrypt(sys.argv[2]).decode('utf-8')
         print(decrypted)
+    else:
+        print('Unknown command. Use "python secret.py help" to see available options.')
 
 if __name__ == '__main__':
     main()
