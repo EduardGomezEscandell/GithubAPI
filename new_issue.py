@@ -48,10 +48,10 @@ def main():
 
     access_token = method.authenticate()
     issue_data = {
-        "title": "Yet another test issue",
+        "title": "Test issue",
         "body": "I opened it with github's API! Check it out, I am assigned and have labels!",
         "assignees": ["EduardGomezEscandell"],
-        "labels": ["bug", "duplicate"]
+        "labels": ["API"]
     }
     repository = "EduardGomezEscandell/GithubAPI"
     open_issue(issue_data, repository, access_token, dry_run)
