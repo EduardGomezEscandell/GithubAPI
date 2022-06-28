@@ -1,8 +1,8 @@
-#/bin/env python3
+#!/usr/bin/env python3
 import os
 import json
 import subprocess
-from secret import decrypt
+from personal_access_token.secret import decrypt
 
 def sanitize(argument: str) -> str:
     return argument.replace('\\', "\\\\").replace('"', '\\"')
