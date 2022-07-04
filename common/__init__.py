@@ -1,1 +1,1 @@
-from common.common import curl, stringify, open_issue
+from common.common import stringify, open_issue

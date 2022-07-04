@@ -1,16 +1,8 @@
 import json
-import subprocess
+import requests
 
 def sanitize(argument: str) -> str:
     return argument.replace('\\', "\\\\").replace('"', '\\"')
-
-def curl(args: list) -> str:
-    command = "curl"
-    for key, value in args:
-        key   = f' {key}'               if key   else ''
-        value = f' "{sanitize(value)}"' if value else ''
-        command = f'{command}{key}{value}'
-    return command
 
 def stringify(data: dict) -> str:
     string = ""
@@ -19,19 +11,25 @@ def stringify(data: dict) -> str:
     return string
 
 def open_issue(issue_data: dict, repository: str, access_token: str, dry_run: bool = True):
-    args = [
-        # ('-i', None),
-        ('-X', 'POST'),
-        ('-H',  'Accept: application/vnd.github.v3+json'),
-        ('-H', f"Authorization: token {access_token}"),
-        (None, f'https://api.github.com/repos/{repository}/issues'),
-        ('-d', json.dumps(issue_data)),
-    ]
+    address = f'https://api.github.com/repos/{repository}/issues'
+    headers = {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': 'token {access_token}'
+    }
+    data = json.dumps(issue_data)
     if dry_run:
-        args = [(arg[0], arg[1].replace(access_token, "<ACCESS_TOKEN_GOES_HERE>")) for arg in args] # Anonymizing
-        cmd = curl(args)
-        print(cmd)
+        headers['Authorization'] = headers['Authorization'].format(access_token="ACCES_TOKEN_GOES_HERE")
+        
+        print("REQUEST:")
+        print("├─Headers:")
+        print("|  └─",headers)
+        print("└─Data:")
+        print("   └─", data)
     else:
-        cmd = curl(args)
-        result = subprocess.check_output(cmd, shell=True, text=True, encoding='utf-8')
+        headers['Authorization'] = headers['Authorization'].format(access_token=access_token)
+
+        result = requests.post(address, headers=headers, data=data)
+        result.raise_for_status()
+        response = json.loads(result.text)
+
         print(json.dumps(json.loads(result), indent=2))

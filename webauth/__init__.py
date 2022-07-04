@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 import json
-from os import access
-import subprocess
+import requests
 import time
 
-from common import curl, stringify
+from common import stringify
 
 def authenticate(client_id_path: str) -> str:
     with open(client_id_path) as f:
@@ -15,17 +14,10 @@ def authenticate(client_id_path: str) -> str:
         "client_id": client_id,
         "scope": "public_repo"
     }
-
-    args = [
-        ("-X", "POST"),
-        ('-H',  'Accept: application/vnd.github.v3+json'),
-        (None, "https://github.com/login/device/code"),
-        ('-d', stringify(data)),
-    ]
-
-    cmd = curl(args)
-    result = subprocess.check_output(cmd, shell=True, text=True, encoding='utf-8')
-    response = json.loads(result)
+    address = r"https://github.com/login/device/code"
+    result = requests.post(address, headers={'Accept': 'application/vnd.github.v3+json'}, data=stringify(data))
+    result.raise_for_status()
+    response = json.loads(result.text)
 
     print("Input the following code into your browser:")
     print(f'URL:  {response["verification_uri"]}')
@@ -41,19 +33,14 @@ def authenticate(client_id_path: str) -> str:
         "device_code": f'{response["device_code"]}',
         "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
     }
-    args = [
-        ("-X", "POST"),
-        ('-H',  'Accept: application/vnd.github.v3+json'),
-        (None, "https://github.com/login/oauth/access_token"),
-        ('-d', stringify(data)),
-    ]
-    cmd = curl(args)
+    address = r"https://github.com/login/oauth/access_token"
 
     while time.time() - start < maxtime:
         time.sleep(interval + 0.1)
 
-        result = subprocess.check_output(cmd, shell=False, text=True, encoding='utf-8')
-        response = json.loads(result)
+        result = requests.post(address, headers={'Accept': 'application/vnd.github.v3+json'}, data=stringify(data))
+        result.raise_for_status()
+        response = json.loads(result.text)
 
         if "error" in response:
             # The API is requesting that we call it less frequently
