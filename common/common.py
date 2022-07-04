@@ -32,4 +32,4 @@ def open_issue(issue_data: dict, repository: str, access_token: str, dry_run: bo
         result.raise_for_status()
         response = json.loads(result.text)
 
-        print(json.dumps(json.loads(result), indent=2))
+        print(json.dumps(response, indent=2))
